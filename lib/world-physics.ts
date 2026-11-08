@@ -2,6 +2,7 @@ import {MeshBuilder,VertexBuffer,VertexData,PhysicsAggregate,PhysicsShapeType,Ph
 import {buildings,terrainHeight,worldBounds,timberPiles,crates,type WorldPoint} from './world-layout.ts';
 import {witnesses} from './adventure.ts';
 import {worldInteractions} from './world-layout.ts';
+import {forestTrees} from './scenery-layout.ts';
 
 export function createWorldCollision(scene:Scene){
  const ground=MeshBuilder.CreateGround('Falkenforst ground',{width:160,height:140,subdivisions:120,updatable:true},scene);
@@ -14,6 +15,7 @@ export function createWorldCollision(scene:Scene){
   const m=MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);m.position.set(x,y,z);m.isVisible=visible;m.checkCollisions=true;m.isPickable=false;
   new PhysicsAggregate(m,PhysicsShapeType.BOX,{mass:0,friction:.8,restitution:0},scene);return m;
  };
+ for(const t of forestTrees()){const m=MeshBuilder.CreateCylinder('oak collider',{height:5*t.scale,diameter:.72*t.scale,tessellation:6},scene);m.position.set(t.x,terrainHeight(t.x,t.z)+2.5*t.scale,t.z);m.isVisible=false;m.checkCollisions=true;new PhysicsAggregate(m,PhysicsShapeType.CYLINDER,{mass:0},scene);}
  const walls=buildings.map(b=>box(b.id,b.x,b.height/2+.2,b.z,b.width,b.height,b.depth,true));
  for(const p of timberPiles)box('timber stack collider',p.x+1.15,1.1,p.z,3.8,1.8,4.2);
  for(const p of crates)box('crate collider',p.x,.65,p.z,1.2,.9,.85);

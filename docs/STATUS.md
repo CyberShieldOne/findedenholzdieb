@@ -1,10 +1,16 @@
-# Holzdieb – aktueller Stand 0.6.0 · 08.11.2026
+# Holzdieb – aktueller Stand 0.7.0 · 08.11.2026
 
 Der bisherige illustrierte Fall bleibt die Startseite. Neu ist `/welt` als separate experimentelle 3D-Vorschau mit fünf räumlich verbundenen Außenbereichen. Technische Entscheidung, Quellenanalyse von World of ClaudeCraft, Abnahmegrenzen und nächster Arbeitsschritt: [OPEN-WORLD.md](OPEN-WORLD.md).
 
-23 Tests bestehen, einschließlich tatsächlicher Havok-WASM-Kollisionen gegen Gebäude/Fluss, Brückenquerung, Sprung/Landung und physischer Erreichbarkeit aller zwölf Beobachtungen und drei Zeugen. Typprüfung besteht. Der Prüfbrowser meldet `WebGL not supported`; die grafische Abnahme und ein vollständiger 3D-Browserdurchlauf sind offen. Deshalb kein Austausch der bewährten Startansicht.
+25 Tests bestehen, einschließlich tatsächlicher Havok-WASM-Kollisionen gegen Gebäude/Fluss, Brückenquerung, Sprung/Landung und physischer Erreichbarkeit aller zwölf Beobachtungen und drei Zeugen. Typprüfung besteht. Der Prüfbrowser meldet `WebGL not supported`; die grafische Abnahme und ein vollständiger 3D-Browserdurchlauf sind offen. Deshalb kein Austausch der bewährten Startansicht.
 
 Die vorherigen Grafik-/Bewegungsiterationen sind in [RENDERING.md](RENDERING.md) und [MOTION.md](MOTION.md) beschrieben. Der Audiofehler nach einem Start im versteckten Tab ist mit zwei Regressionstests behoben. Die bekannte GitHub-Medienlücke bleibt in ASSETS.md/ART-ASSETS.md dokumentiert. Die neue 3D-Welt verwendet eigene Geometrie und Paket-WASM statt weiterer großer Bildblobs.
+
+## Grafikiteration 0.7.0
+
+Originale Detektiv-Gehbilder als alpha-getestetes Billboard in der Babylon-Szene; kamerabezogene Auswahl von Seiten-, Vorder- und Rückansichten. Schatten und Verdeckung laufen im 3D-Renderer, die Figur bleibt bewusst eine gemalte Bildfigur. Aufwendigere prozedurale Materialien, Fachwerk-/Fenster-/Blumendetails, mehrteilige Baumkronen in Thin-Instance-Batches, 302 gesetzte Bäume, dichtes Unterholz, sanfte Geländeübergänge und entfernte Dorf-/Burgkulisse. Quellen, Verfahren und Grenzen: [PAINTERLY-WORLD.md](PAINTERLY-WORLD.md). Die Tests prüfen zusätzlich Atlaswahl und freie Wege.
+
+Der Nutzer hat den vorherigen Stand 0.6.0 auf dem iPhone 15 positiv geprüft. Diese Rückmeldung ist kein neuer Geräte-/Leistungsnachweis für 0.7.0. Die visuelle Abnahme dieses Grafikstands bleibt wegen fehlendem WebGL im Prüfbrowser offen.
 
 ## Historischer Stand 0.3.1
 

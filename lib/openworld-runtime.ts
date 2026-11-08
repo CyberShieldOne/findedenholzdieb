@@ -4,6 +4,8 @@ import havokUrl from '@babylonjs/havok/lib/esm/HavokPhysics.wasm?url';
 import {createWorldCollision,createWalker} from './world-physics';
 import {buildings,regions,roads,timberPiles,crates,worldInteractions,terrainHeight,nearestRegion,nearestInteraction,type WorldPoint} from './world-layout';
 import {evidence,witnesses,type Place} from './adventure';
+import {createPainterlyDetective} from './painterly-detective';
+import {landscapeMaterials,dressLandscape} from './painterly-landscape';
 
 export type WorldFrame={x:number;z:number;place:Place;nearby:string|null;fps:number};
 export type WorldOptions={start:WorldPoint;paused:()=>boolean;onFrame:(f:WorldFrame)=>void;onInteract:(id:string)=>void;quality:'balanced'|'high'};
@@ -12,10 +14,10 @@ export async function mountOpenWorld(canvas:HTMLCanvasElement,options:WorldOptio
  const hk=await HavokPhysics({locateFile:()=>havokUrl});
  const engine=new Engine(canvas,true,{preserveDrawingBuffer:true,stencil:true,powerPreference:'high-performance'});
  engine.setHardwareScalingLevel(1/Math.min(window.devicePixelRatio||1,options.quality==='high'?1.75:1.25));
- const scene=new Scene(engine);scene.clearColor=new Color4(.68,.77,.74,1);scene.fogMode=Scene.FOGMODE_EXP2;scene.fogDensity=.008;scene.fogColor=new Color3(.67,.76,.73);
+ const scene=new Scene(engine);scene.clearColor=new Color4(.68,.77,.74,1);scene.fogMode=Scene.FOGMODE_EXP2;scene.fogDensity=.0045;scene.fogColor=new Color3(.74,.79,.7);
  scene.enablePhysics(new Vector3(0,-9.81,0),new HavokPlugin(true,hk));scene.getPhysicsEngine()!.setTimeStep(1/60);
  const hemi=new HemisphericLight('sky fill',new Vector3(0,1,0),scene);hemi.intensity=.72;hemi.diffuse=Color3.FromHexString('#d5e4f1');hemi.groundColor=Color3.FromHexString('#6c7050');
- const sun=new DirectionalLight('late morning sun',new Vector3(-.6,-1,.45),scene);sun.position=new Vector3(45,75,-40);sun.intensity=2.5;sun.diffuse=Color3.FromHexString('#ffe3b6');sun.autoCalcShadowZBounds=true;sun.shadowMinZ=1;sun.shadowMaxZ=220;
+ const sun=new DirectionalLight('late morning sun',new Vector3(-.6,-1,.45),scene);sun.position=new Vector3(45,75,-40);sun.intensity=2.5;sun.diffuse=Color3.FromHexString('#ffe0a8');sun.autoCalcShadowZBounds=true;sun.shadowMinZ=1;sun.shadowMaxZ=220;
  const shadow=new ShadowGenerator(options.quality==='high'?2048:1024,sun);shadow.usePercentageCloserFiltering=true;shadow.bias=.001;shadow.normalBias=.035;shadow.setDarkness(.18);
  const mat=(name:string,hex:string,roughness=.88)=>{const m=new PBRMaterial(name,scene);m.albedoColor=Color3.FromHexString(hex);m.roughness=roughness;m.metallic=0;return m};
  const timber=mat('warm oak','#725139'),bark=mat('bark','#6a4a32'),endgrain=mat('cut timber','#cea577'),roofmat=mat('slate green','#344b48'),stone=mat('limestone','#8e9686'),dark=mat('ironwork','#253c38',.52),cream=mat('plaster','#e3d5b6');
@@ -55,15 +57,6 @@ export async function mountOpenWorld(canvas:HTMLCanvasElement,options:WorldOptio
  for(const {x:sx,z:sz}of timberPiles)for(let row=0;row<3;row++)for(let j=0;j<4-row;j++){const log=cyl('stacked log',.38,4,sx+j*.78+row*.4,.6+row*.65,sz,timber);log.rotation.x=Math.PI/2;const cap=cyl('end grain',.34,.035,log.position.x,log.position.y,sz-2.02,endgrain);cap.rotation.x=Math.PI/2;}
  for(const {x,z}of crates){box('crate',1.2,.9,.85,x,.65,z,timber);for(const dx of [-.5,.5])box('crate band',.08,.95,.9,x+dx,.65,z,dark)}
  const cart=new TransformNode('shared transporter',scene);cart.position.set(63,.2,-27);box('cart bed',2,.25,3.6,0,.9,0,timber,cart);for(const x of [-.95,.95])box('cart side',.13,.8,3.6,x,1.35,0,timber,cart);for(const x of [-1.1,1.1])for(const z of [-1.1,1.1]){const tire=cyl('wheel',.44,.22,x,.48,z,dark,cart);tire.rotation.z=Math.PI/2}
- // Instanced vegetation: shared meshes/materials, native distance LOD.
- const leafMats=['#5c7350','#78824c','#95904d','#aa9251'].map((hex,i)=>mat('canopy '+i,hex));
- const trunkSource=cyl('trunk source',.28,5,0,-100,0,bark);trunkSource.isVisible=false;trunkSource.addLODLevel(115,null);
- const crowns=leafMats.map((m,i)=>{const o=MeshBuilder.CreateSphere('canopy source '+i,{diameter:4.6,segments:7},scene);o.scaling.set(1,1.25,.92);o.position.y=-100;o.material=m;o.isVisible=false;o.addLODLevel(115,null);return o});
- let treeCount=0;for(let i=0;i<260;i++){const x=Math.sin(i*127.1+1)*73,z=Math.cos(i*311.7+3)*60;let avoid=Math.abs(x-12)<7;for(const r of regions)if(Math.hypot(x-r.x,z-r.z)<15)avoid=true;for(const path of roads)for(let j=1;j<path.length;j++)if(segmentDistance(x,z,path[j-1],path[j])<5)avoid=true;if(avoid)continue;const h=terrainHeight(x,z),scale=.85+(i%7)*.1;
-  const t=trunkSource.createInstance('oak trunk');t.position.set(x,h+2.5*scale,z);t.scaling.set(scale,scale,scale);t.checkCollisions=true;cast(t);
-  const phys=MeshBuilder.CreateCylinder('trunk collider',{diameter:.65*scale,height:5*scale,tessellation:6},scene);phys.position.copyFrom(t.position);phys.isVisible=false;phys.checkCollisions=true;new PhysicsAggregate(phys,PhysicsShapeType.CYLINDER,{mass:0},scene);
-  const source=crowns[i%crowns.length];const crown=source.createInstance('oak crown');crown.position.set(x,h+5.5*scale,z);crown.scaling.set(scale,scale,scale);cast(crown);treeCount++;
- }
  const rockmat=mat('river stones','#858c79');for(let i=0;i<46;i++){const x=12+(i%2?-4.2:4.2),z=-60+i*2.6;if(z>-2&&z<10)continue;const r=MeshBuilder.CreateSphere('bank stone',{diameter:1,segments:5},scene);r.position.set(x,terrainHeight(x,z)+.12,z);r.scaling.set(1.3,.5,.8);r.material=rockmat;r.receiveShadows=true}
  const makePerson=(name:string,x:number,z:number,coatHex:string,isPlayer=false)=>{
   const root=new TransformNode(name,scene),coat=mat(name+' coat',coatHex),skin=mat(name+' skin','#c79d75'),boots=dark;
@@ -78,12 +71,13 @@ export async function mountOpenWorld(canvas:HTMLCanvasElement,options:WorldOptio
   const walk=new AnimationGroup(name+' stride',scene);limbs.forEach((limb,i)=>{const a=new Animation('swing','rotation.x',30,Animation.ANIMATIONTYPE_FLOAT,Animation.ANIMATIONLOOPMODE_CYCLE);const sign=i===0||i===3?1:-1;a.setKeys([{frame:0,value:0},{frame:8,value:sign*.5},{frame:16,value:0},{frame:24,value:-sign*.5},{frame:32,value:0}]);walk.addTargetedAnimation(a,limb)});walk.start(true);walk.pause();
   return{root,walk,torso,isPlayer};
  };
- const player=makePerson('detective',options.start.x,options.start.z,'#aa7c49',true);
+ const player={root:new TransformNode('detective foot position',scene)};player.root.position.set(options.start.x,terrainHeight(options.start.x,options.start.z),options.start.z);const paintedDetective=createPainterlyDetective(scene,shadow);
  const npcColors=['#556f58','#96734f','#586b79'];witnesses.forEach((w,i)=>{const p=worldInteractions[w.id];const npc=makePerson(w.name,p.x,p.z,npcColors[i]);npc.root.rotation.y=Math.PI;});
  const markerMat=mat('clue brass','#dcaf63',.36);markerMat.emissiveColor=new Color3(.19,.1,.02);
  const markers:Mesh[]=[];for(const item of evidence){const p=worldInteractions[item.id];const marker=MeshBuilder.CreateTorus(item.name,{diameter:.55,thickness:.075,tessellation:16},scene);marker.position.set(p.x,terrainHeight(p.x,p.z)+1.6,p.z);marker.rotation.x=Math.PI/2;marker.material=markerMat;markers.push(marker);}
+ const artMaterials=landscapeMaterials(scene);collision.ground.material=artMaterials.ground;const scenery=dressLandscape(scene,collision.ground,shadow,options.quality,artMaterials);
  const walker=createWalker(scene,options.start);
- const camera=new ArcRotateCamera('follow camera',-Math.PI/2-.5,1.09,10,new Vector3(options.start.x,1.3,options.start.z),scene);camera.lowerRadiusLimit=4;camera.upperRadiusLimit=21;camera.lowerBetaLimit=.35;camera.upperBetaLimit=1.35;camera.minZ=.15;camera.maxZ=200;camera.wheelDeltaPercentage=.015;camera.panningSensibility=0;camera.attachControl(canvas,true);camera.checkCollisions=true;camera.collisionRadius=new Vector3(.3,.3,.3);camera.inputs.removeByType('ArcRotateCameraKeyboardMoveInput');
+ const camera=new ArcRotateCamera('follow camera',-Math.PI/2-.5,1.09,10,new Vector3(options.start.x,1.3,options.start.z),scene);camera.lowerRadiusLimit=4;camera.upperRadiusLimit=21;camera.lowerBetaLimit=.35;camera.upperBetaLimit=1.35;camera.minZ=.15;camera.maxZ=420;camera.wheelDeltaPercentage=.015;camera.panningSensibility=0;camera.attachControl(canvas,true);camera.checkCollisions=true;camera.collisionRadius=new Vector3(.3,.3,.3);camera.inputs.removeByType('ArcRotateCameraKeyboardMoveInput');
  const pipeline=new DefaultRenderingPipeline('light finish',true,scene,[camera]);pipeline.fxaaEnabled=true;pipeline.samples=options.quality==='high'?4:1;pipeline.bloomEnabled=options.quality==='high';pipeline.bloomThreshold=1.3;pipeline.bloomWeight=.12;scene.imageProcessingConfiguration.toneMappingEnabled=true;scene.imageProcessingConfiguration.toneMappingType=ImageProcessingConfiguration.TONEMAPPING_ACES;scene.imageProcessingConfiguration.exposure=1.1;scene.imageProcessingConfiguration.contrast=1.12;
  const keys=new Set<string>();let jump=false,disposed=false,time=0,last=performance.now(),acc=0,frameAt=0,distance=0,nearby:string|null=null;
  const down=(e:KeyboardEvent)=>{if(/INPUT|TEXTAREA|SELECT/.test((e.target as HTMLElement)?.tagName)||options.paused())return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift',' '].includes(k)){e.preventDefault();keys.add(k);if(k===' '&&!e.repeat)jump=true}if(k==='e'&&!e.repeat&&nearby){e.preventDefault();options.onInteract(nearby);keys.clear()}};
@@ -96,8 +90,8 @@ export async function mountOpenWorld(canvas:HTMLCanvasElement,options:WorldOptio
    acc+=dt;const forward=camera.target.subtract(camera.position);forward.y=0;forward.normalize();const right=Vector3.Cross(Vector3.Up(),forward).normalize();const a=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),b=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);const desired=forward.scale(b).add(right.scale(a));if(desired.lengthSquared()>0)desired.normalize().scaleInPlace(keys.has('shift')?5.2:3.15);
    let n=0;while(acc>=1/60&&n++<5){const prev=walker.controller.getPosition().clone(),pos=walker.step(1/60,desired,jump);jump=false;acc-=1/60;const moved=Math.hypot(pos.x-prev.x,pos.z-prev.z);distance+=moved;player.root.position.set(pos.x,pos.y-.9,pos.z);if(moved>.002)player.root.rotation.y=Math.atan2(pos.x-prev.x,pos.z-prev.z);}
   }
-  player.walk.goToFrame(distance/1.9*32%32);const pos=player.root.position;camera.target.copyFrom(pos.add(new Vector3(0,1.3,0)));wheelRoot.rotation.x=time*.11;markers.forEach((m,i)=>{m.position.y=terrainHeight(m.position.x,m.position.z)+1.6+Math.sin(time*1.8+i)*.08;m.rotation.y=time*.3});ripples.forEach((r,i)=>{r.position.z=-65+((i*4.1+time*.45)%130)});
+  paintedDetective.update(player.root.position,distance,player.root.rotation.y,camera.position);const pos=player.root.position;camera.target.copyFrom(pos.add(new Vector3(0,1.3,0)));wheelRoot.rotation.x=time*.11;markers.forEach((m,i)=>{m.position.y=terrainHeight(m.position.x,m.position.z)+1.6+Math.sin(time*1.8+i)*.08;m.rotation.y=time*.3});ripples.forEach((r,i)=>{r.position.z=-65+((i*4.1+time*.45)%130)});
   nearby=nearestInteraction(pos);if(now-frameAt>150){frameAt=now;options.onFrame({x:pos.x,z:pos.z,place:nearestRegion(pos),nearby,fps:Math.round(engine.getFps())})}scene.render();
  });
- return{treeCount,interact(){if(nearby&&!options.paused())options.onInteract(nearby)},dispose(){disposed=true;engine.stopRenderLoop();resize.disconnect();window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur);document.removeEventListener('visibilitychange',blur);walker.dispose();scene.dispose();engine.dispose()}};
+ return{treeCount:scenery.trees,interact(){if(nearby&&!options.paused())options.onInteract(nearby)},dispose(){disposed=true;engine.stopRenderLoop();resize.disconnect();window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur);document.removeEventListener('visibilitychange',blur);paintedDetective.dispose();walker.dispose();scene.dispose();engine.dispose()}};
 }

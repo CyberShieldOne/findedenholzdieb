@@ -33,10 +33,13 @@ export const worldInteractions:Record<string,WorldPoint>={
  waage:{x:29,z:29},uhr:{x:38,z:29},rad:{x:43,z:26},theo:{x:33,z:26},
  ladung:{x:49,z:-23},fahrzeug:{x:62,z:-24}
 };
+export function worldRoadDistance(x:number,z:number){let nearest=Infinity;for(const road of roads)for(let i=1;i<road.length;i++){const a=road[i-1],b=road[i],dx=b.x-a.x,dz=b.z-a.z,t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz)));nearest=Math.min(nearest,Math.hypot(x-a.x-dx*t,z-a.z-dz*t))}return nearest}
 export function terrainHeight(x:number,z:number){
  const river=Math.exp(-Math.pow((x-12)/3.4,4));
  const edge=Math.max(0,(Math.max(Math.abs(x)/70,Math.abs(z)/55)-.68)/.32);
- return .2-river*2.6+edge*edge*(2.5+Math.sin(x*.12)*Math.cos(z*.16)*1.7);
+ const roadMask=Math.min(1,Math.max(0,(worldRoadDistance(x,z)-5)/6)),placeMask=Math.min(1,Math.max(0,(Math.min(...regions.map(r=>Math.hypot(x-r.x,z-r.z)))-13)/7));
+ const relief=roadMask*placeMask*(Math.sin(x*.11)*Math.cos(z*.13)*.65+Math.sin(x*.25+z*.17)*.15);
+ return .2+relief-river*2.6+roadMask*placeMask*edge*edge*(2.5+Math.sin(x*.12)*Math.cos(z*.16)*1.7);
 }
 export function nearestRegion(p:WorldPoint):Place{return regions.reduce((a,b)=>Math.hypot(p.x-a.x,p.z-a.z)<Math.hypot(p.x-b.x,p.z-b.z)?a:b).id}
 export function nearestInteraction(p:WorldPoint,radius=3.2){let id:string|null=null,best=radius;for(const [key,q]of Object.entries(worldInteractions)){const d=Math.hypot(p.x-q.x,p.z-q.z);if(d<best){best=d;id=key}}return id}

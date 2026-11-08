@@ -1,5 +1,7 @@
 # Falkenforst · 3D-Bauabschnitt 0.6.0
 
+Aktualisierung 0.7.0: Der Originaldetektiv wird nun als animierte Billboard-Bildfigur in der räumlichen Szene dargestellt; Gelände, Fassaden und Vegetation sind erweitert. Siehe [PAINTERLY-WORLD.md](PAINTERLY-WORLD.md) und [STATUS.md](STATUS.md). Die folgenden Abschnitte dokumentieren den ursprünglichen 3D-Bauabschnitt.
+
 Stand: 08.11.2026. Separate experimentelle Route `/welt`; die Startseite und `/abenteuer` bleiben die bisherige illustrierte Ermittlung. Auf der Startseite führt ein sichtbarer Link zur freien Welt. Keine neue Ausführungs-, Freigabe- oder Deployment-Plattform.
 
 ## Ergebnis und Abnahmegrenze
