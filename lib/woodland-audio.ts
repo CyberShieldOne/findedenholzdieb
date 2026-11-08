@@ -62,6 +62,6 @@ export class WoodlandAudio{
  }
  private stopVoices(){this.voices.forEach(o=>{try{o.stop()}catch{}});this.voices.clear()}
  pause(){this.active=false;this.clearTimers();this.stopVoices();if(this.context&&this.master){this.master.gain.cancelScheduledValues(this.context.currentTime);this.master.gain.setTargetAtTime(0,this.context.currentTime,.08);void this.context.suspend()}}
- visibility(hidden:boolean){this.hidden=hidden;this.clearTimers();if(!this.context||!this.active)return;if(hidden){this.stopVoices();void this.context.suspend()}else{void this.context.resume().then(()=>{if(this.active&&!this.hidden)this.loops()}).catch(()=>{})}}
+ visibility(hidden:boolean){this.hidden=hidden;this.clearTimers();if(!this.context||!this.active)return;if(hidden){this.stopVoices();void this.context.suspend()}else{const context=this.context;void context.resume().then(()=>{if(this.context!==context||!this.active||this.hidden||!this.master)return;this.master.gain.cancelScheduledValues(context.currentTime);this.master.gain.setTargetAtTime(.7,context.currentTime,.5);this.loops()}).catch(()=>{})}}
  async dispose(){this.active=false;this.clearTimers();this.stopVoices();this.sources.forEach(s=>{try{s.stop()}catch{}});this.sources=[];if(this.context){try{await this.context.close()}catch{}}this.context=null;this.brookLoading=null}
 }
