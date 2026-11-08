@@ -1,4 +1,13 @@
-# Holzdieb – Stand 0.3.1
+# Holzdieb – aktueller Stand 0.6.0 · 08.11.2026
+
+Der bisherige illustrierte Fall bleibt die Startseite. Neu ist `/welt` als separate experimentelle 3D-Vorschau mit fünf räumlich verbundenen Außenbereichen. Technische Entscheidung, Quellenanalyse von World of ClaudeCraft, Abnahmegrenzen und nächster Arbeitsschritt: [OPEN-WORLD.md](OPEN-WORLD.md).
+
+23 Tests bestehen, einschließlich tatsächlicher Havok-WASM-Kollisionen gegen Gebäude/Fluss, Brückenquerung, Sprung/Landung und physischer Erreichbarkeit aller zwölf Beobachtungen und drei Zeugen. Typprüfung besteht. Der Prüfbrowser meldet `WebGL not supported`; die grafische Abnahme und ein vollständiger 3D-Browserdurchlauf sind offen. Deshalb kein Austausch der bewährten Startansicht.
+
+Die vorherigen Grafik-/Bewegungsiterationen sind in [RENDERING.md](RENDERING.md) und [MOTION.md](MOTION.md) beschrieben. Der Audiofehler nach einem Start im versteckten Tab ist mit zwei Regressionstests behoben. Die bekannte GitHub-Medienlücke bleibt in ASSETS.md/ART-ASSETS.md dokumentiert. Die neue 3D-Welt verwendet eigene Geometrie und Paket-WASM statt weiterer großer Bildblobs.
+
+## Historischer Stand 0.3.1
+
 
 ## Geliefert
 
