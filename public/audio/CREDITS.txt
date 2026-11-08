@@ -1,0 +1,10 @@
+Kleiner Bach / Woodland brook
+Creator: TRP
+Source: https://freesound.org/people/TRP/sounds/567730/
+Title: 200620 Brook, Stream, flowing water, close, gentle, Mineral Springs Rd, Hamilton, 3pm.flac
+Public HQ MP3 preview: https://cdn.freesound.org/previews/567/567730_97550-hq.mp3
+License: Creative Commons 0 (CC0 1.0 Universal)
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+Retrieved: 2026-11-08
+Edits: 44-second excerpt starting at 00:18, high-pass 160 Hz, low-pass 2600 Hz, +2 dB at 750 Hz, normalized to -25 LUFS, short click-prevention fades, 128 kb/s MP3.
+Playback: native AudioBufferSourceNode.loop with quiet gain and modest right-hand stereo placement. No third-party requests during playback.
