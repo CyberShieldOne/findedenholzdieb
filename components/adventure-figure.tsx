@@ -1,0 +1,1 @@
+export function AdventureFigure({person='detective'}:{person?:string}){const positions:Record<string,string>={detective:'0%',bruno:'33.333%',mia:'66.666%',theo:'100%'};return <span className="painted-character" style={{backgroundPosition:`${positions[person]||'0%'} 50%`}} aria-hidden="true"/>}
