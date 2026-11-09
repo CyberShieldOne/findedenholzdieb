@@ -5,6 +5,7 @@ import {createWorldCollision,createWalker} from './world-physics';
 import {buildings,regions,roads,timberPiles,crates,worldInteractions,terrainHeight,nearestRegion,nearestInteraction,type WorldPoint} from './world-layout';
 import {evidence,witnesses,type Place} from './adventure';
 import {createPainterlyDetective} from './painterly-detective';
+import {actorHeightMeters,type ActorId} from './visual-scale';
 import {landscapeMaterials,dressLandscape} from './painterly-landscape';
 
 export type WorldFrame={x:number;z:number;place:Place;nearby:string|null;fps:number};
@@ -58,7 +59,7 @@ export async function mountOpenWorld(canvas:HTMLCanvasElement,options:WorldOptio
  for(const {x,z}of crates){box('crate',1.2,.9,.85,x,.65,z,timber);for(const dx of [-.5,.5])box('crate band',.08,.95,.9,x+dx,.65,z,dark)}
  const cart=new TransformNode('shared transporter',scene);cart.position.set(63,.2,-27);box('cart bed',2,.25,3.6,0,.9,0,timber,cart);for(const x of [-.95,.95])box('cart side',.13,.8,3.6,x,1.35,0,timber,cart);for(const x of [-1.1,1.1])for(const z of [-1.1,1.1]){const tire=cyl('wheel',.44,.22,x,.48,z,dark,cart);tire.rotation.z=Math.PI/2}
  const rockmat=mat('river stones','#858c79');for(let i=0;i<46;i++){const x=12+(i%2?-4.2:4.2),z=-60+i*2.6;if(z>-2&&z<10)continue;const r=MeshBuilder.CreateSphere('bank stone',{diameter:1,segments:5},scene);r.position.set(x,terrainHeight(x,z)+.12,z);r.scaling.set(1.3,.5,.8);r.material=rockmat;r.receiveShadows=true}
- const makePerson=(name:string,x:number,z:number,coatHex:string,isPlayer=false)=>{
+ const makePerson=(name:string,x:number,z:number,coatHex:string,actor:ActorId,isPlayer=false)=>{
   const root=new TransformNode(name,scene),coat=mat(name+' coat',coatHex),skin=mat(name+' skin','#c79d75'),boots=dark;
   root.position.set(x,terrainHeight(x,z),z);
   const torso=box('coat torso',.55,.65,.31,0,1.14,0,coat,root);const skirt=MeshBuilder.CreateCylinder('coat hem',{diameterTop:.5,diameterBottom:.72,height:.38,tessellation:8},scene);skirt.parent=root;skirt.position.y=.79;skirt.material=coat;cast(skirt);
@@ -69,10 +70,14 @@ export async function mountOpenWorld(canvas:HTMLCanvasElement,options:WorldOptio
   for(const side of [-1,1]){const leg=new TransformNode('hip',scene);leg.parent=root;leg.position.set(side*.15,.78,0);box('trouser',.19,.56,.21,0,-.27,0,boots,leg);box('shoe',.22,.15,.38,0,-.64,.07,boots,leg);limbs.push(leg);}
   for(const side of [-1,1]){const arm=new TransformNode('shoulder',scene);arm.parent=root;arm.position.set(side*.34,1.42,0);const sleeve=box('sleeve',.19,.54,.22,0,-.26,0,coat,arm);box('hand',.15,.17,.16,0,-.58,0,skin,arm);limbs.push(arm);}
   const walk=new AnimationGroup(name+' stride',scene);limbs.forEach((limb,i)=>{const a=new Animation('swing','rotation.x',30,Animation.ANIMATIONTYPE_FLOAT,Animation.ANIMATIONLOOPMODE_CYCLE);const sign=i===0||i===3?1:-1;a.setKeys([{frame:0,value:0},{frame:8,value:sign*.5},{frame:16,value:0},{frame:24,value:-sign*.5},{frame:32,value:0}]);walk.addTargetedAnimation(a,limb)});walk.start(true);walk.pause();
+  // Babylon's native bounds normalize this model to its shared metric height.
+  const bounds=root.getHierarchyBoundingVectors(true);const factor=actorHeightMeters[actor]/(bounds.max.y-bounds.min.y);
+  const minLocalY=bounds.min.y-root.position.y;for(const child of root.getChildren())if(child instanceof TransformNode)child.position.y-=minLocalY;
+  root.scaling.setAll(factor);
   return{root,walk,torso,isPlayer};
  };
  const player={root:new TransformNode('detective foot position',scene)};player.root.position.set(options.start.x,terrainHeight(options.start.x,options.start.z),options.start.z);const paintedDetective=createPainterlyDetective(scene,shadow);
- const npcColors=['#556f58','#96734f','#586b79'];witnesses.forEach((w,i)=>{const p=worldInteractions[w.id];const npc=makePerson(w.name,p.x,p.z,npcColors[i]);npc.root.rotation.y=Math.PI;});
+ const npcColors=['#556f58','#96734f','#586b79'];witnesses.forEach((w,i)=>{const p=worldInteractions[w.id];const npc=makePerson(w.name,p.x,p.z,npcColors[i],w.id);npc.root.rotation.y=Math.PI;});
  const markerMat=mat('clue brass','#dcaf63',.36);markerMat.emissiveColor=new Color3(.19,.1,.02);
  const markers:Mesh[]=[];for(const item of evidence){const p=worldInteractions[item.id];const marker=MeshBuilder.CreateTorus(item.name,{diameter:.55,thickness:.075,tessellation:16},scene);marker.position.set(p.x,terrainHeight(p.x,p.z)+1.6,p.z);marker.rotation.x=Math.PI/2;marker.material=markerMat;markers.push(marker);}
  const artMaterials=landscapeMaterials(scene);collision.ground.material=artMaterials.ground;const scenery=dressLandscape(scene,collision.ground,shadow,options.quality,artMaterials);

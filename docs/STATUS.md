@@ -1,4 +1,6 @@
-# Holzdieb – aktueller Stand 0.7.0 · 08.11.2026
+# Holzdieb – aktueller Stand 0.8.0 · 09.11.2026
+
+Neue Maßstabsiteration: [VISUAL-SCALE.md](VISUAL-SCALE.md). Spieler und NPCs verwenden je illustrierter Szene eine gemeinsame Referenzprojektion und skalieren mit der Bildfläche. Dieselben Körperhöhen gelten in der Babylon-Welt; transparente Gehbildränder werden ausgeglichen. 27 Tests einschließlich neuer Referenz-/Sprite-Regressionen und Typprüfung bestanden. Visuelle Prüfung und Veröffentlichungsnachweis werden unten ergänzt.
 
 Der bisherige illustrierte Fall bleibt die Startseite. Neu ist `/welt` als separate experimentelle 3D-Vorschau mit fünf räumlich verbundenen Außenbereichen. Technische Entscheidung, Quellenanalyse von World of ClaudeCraft, Abnahmegrenzen und nächster Arbeitsschritt: [OPEN-WORLD.md](OPEN-WORLD.md).
 
@@ -40,3 +42,7 @@ DoD erreicht: automatische Untersuchung nach dem Hinlaufen; Figuren statt Buchst
 ## Sicherung
 
 Der komplette Spielstand einschließlich Originalmedien ist im nativen Sites-Quellstand gesichert. Die GitHub-Kopie enthält den Quellcode, Logo und Audio; die einzelne offene Bildübertragung und ihr unveränderter versionierter Bezug stehen in docs/ASSETS.md. Ein eigenständiger Build von Fall 001 aus GitHub benötigt die Wiederherstellung dieses Bildes. Die aktuelle Produktion besitzt es unverändert.
+
+## Maßstabsiteration 0.8.0 – Prüfstand
+
+27 Tests bestanden; TypeScript ohne Fehler. Produktionsbuild wird vor dem Speichern der Version durch den nativen Sites-Ablauf ausgeführt. Die lokale Vorschau meldet einen Start, der Prüfbrowser erhält jedoch `ERR_CONNECTION_REFUSED`. Deshalb ist die visuelle Größenabnahme in dieser Umgebung noch offen; aus den bestandenen Rechentests wird keine Geräte- oder Bildabnahme abgeleitet. Kalibrierung und wiederverwendbarer Prompt: [VISUAL-SCALE.md](VISUAL-SCALE.md).

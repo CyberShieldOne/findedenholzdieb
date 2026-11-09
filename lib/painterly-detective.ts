@@ -16,7 +16,7 @@ export function createPainterlyDetective(scene:Scene,shadows:ShadowGenerator){
   const texture=a.sheet==='side'?side:depth;material.diffuseTexture=texture;
   texture.uScale=(a.flip?-1:1)/a.columns;texture.uOffset=(a.column+(a.flip?1:0))/a.columns;
   texture.vScale=1/a.rows;texture.vOffset=(a.rows-1-a.row)/a.rows;
-  mesh.scaling.set(a.width,a.height,1);mesh.position.copyFrom(feet).addInPlaceFromFloats(0,a.height/2-(a.sheet==='side'?.12:.025),0);
+  mesh.scaling.set(a.width,a.height,1);mesh.position.copyFrom(feet).addInPlaceFromFloats(0,a.height/2-a.footInset,0);
   const onBridge=feet.x>4.5&&feet.x<19.5&&feet.z>0&&feet.z<8;
   const groundY=onBridge?.2:terrainHeight(feet.x,feet.z);contact.position.set(feet.x,groundY+.018,feet.z);cm.alpha=.22*Math.max(0,1-Math.max(0,feet.y-groundY)/1.5);
  },dispose(){mesh.dispose();contact.dispose();material.dispose();cm.dispose();side.dispose();depth.dispose()}};
