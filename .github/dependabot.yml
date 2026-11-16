@@ -1,0 +1,12 @@
+# GitHub-native dependency version updates only; no auto-merge.
+# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference (accessed 2026-11-16)
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    groups:
+      routine-minor-patch:
+        update-types: ["minor", "patch"]
