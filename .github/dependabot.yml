@@ -1,12 +1,11 @@
-# GitHub-native dependency version updates only; no auto-merge.
-# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference (accessed 2026-11-16)
+# GitHub-native Dependabot: GitHub Actions version updates only.
+# Vendor compatibility: https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference (checked 2026-11-16)
+# pnpm v11.25.0 in package.json exceeds GitHub's documented pnpm range (v7-v10).
+# Do NOT emulate unsupported updates via scripts or custom automation.
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
-    groups:
-      routine-minor-patch:
-        update-types: ["minor", "patch"]
